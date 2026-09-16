@@ -6,4 +6,4 @@
 教師 | [陳鍾誠](https://www.nqu.edu.tw/educsie/index.php?act=blog&code=list&ids=4)
 學校 | [金門大學資訊工程系](https://www.nqu.edu.tw/educsie/index.php)
 學生 | 胡鈞揚
-學號 | 65
+學號 | 111410565
