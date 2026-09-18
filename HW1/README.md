@@ -156,4 +156,4 @@ Status: 200 OK
 
 ---
 
-<p align="center">Made with Python · Simple HTTP testing from your terminal</p>
+<p align="center">Made with Python · Simple HTTP testing from my-curl</p>
