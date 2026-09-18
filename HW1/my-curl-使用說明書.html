@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>my-curl｜完整使用說明書</title>
+  <style>
+    :root { --ink:#172033; --muted:#5b6474; --line:#e4e8ef; --paper:#fff; --bg:#f4f7fb; --accent:#0a7a73; --code:#14202d; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif; color:var(--ink); background:var(--bg); line-height:1.7; }
+    header { padding:64px 24px 48px; color:white; background:linear-gradient(135deg,#075b60,#0b8d7e 55%,#44b49b); }
+    .wrap { max-width:1080px; margin:auto; }
+    .tag { display:inline-block; margin-bottom:12px; padding:3px 11px; font-size:.84rem; letter-spacing:.06em; border:1px solid #a9e3d7; border-radius:99px; }
+    h1 { margin:0; font-size:clamp(2.2rem,6vw,4rem); letter-spacing:-.04em; }
+    header p { max-width:720px; margin:12px 0 0; font-size:1.1rem; color:#dcfff7; }
+    main { max-width:1080px; margin:36px auto 72px; padding:0 24px; }
+    section { margin:22px 0; padding:28px; background:var(--paper); border:1px solid var(--line); border-radius:16px; box-shadow:0 8px 28px #2330490a; }
+    h2 { margin:0 0 14px; font-size:1.45rem; }
+    h3 { margin:22px 0 8px; font-size:1.08rem; }
+    p { margin:8px 0; } ul { margin:8px 0; padding-left:1.35rem; }
+    code { padding:2px 5px; border-radius:5px; color:#a34216; background:#fff2ec; font-family:Consolas,monospace; }
+    pre { overflow:auto; margin:12px 0; padding:16px; color:#e8f4ff; background:var(--code); border-radius:10px; line-height:1.55; }
+    pre code { padding:0; color:inherit; background:none; }
+    table { width:100%; border-collapse:collapse; margin:12px 0; } th,td { padding:11px 10px; text-align:left; vertical-align:top; border-bottom:1px solid var(--line); } th { color:var(--muted); font-size:.9rem; background:#f8fafc; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
+    .card { padding:16px; border-radius:10px; background:#f6fbfa; border:1px solid #d6eee8; } .card strong { display:block; margin-bottom:4px; }
+    .notice { padding:14px 16px; border-left:4px solid #e19a27; background:#fff9ed; border-radius:0 8px 8px 0; }
+    .flow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; } .flow span { padding:6px 10px; background:#ecf6f5; border-radius:8px; font-size:.92rem; } .flow b { color:var(--accent); }
+    footer { padding:24px; color:var(--muted); text-align:center; font-size:.9rem; }
+  </style>
+</head>
+<body>
+  <header><div class="wrap"><div class="tag">Python 命令列工具</div><h1>my-curl 使用說明書</h1><p>一個以 Python 與 requests 製作的輕量 HTTP 用戶端。它用接近 curl 的選項，讓你在終端機發送 GET、POST、PUT、DELETE 等 HTTP 請求並查看回應。</p></div></header>
+  <main>
+    <section><h2>1. 專案概覽</h2><div class="grid"><div class="card"><strong>用途</strong>快速測試網站 API、查看伺服器回應，或練習 HTTP 請求。</div><div class="card"><strong>進入點</strong><code>mycurl.py</code>；直接以 Python 執行。</div><div class="card"><strong>相依套件</strong><code>requests &gt;= 2.28.0</code>。</div><div class="card"><strong>預設行為</strong>無資料時送 GET；給資料但未指定方法時自動送 POST。</div></div></section>
+    <section><h2>2. 檔案結構與職責</h2><table><thead><tr><th>檔案</th><th>用途</th></tr></thead><tbody><tr><td><code>mycurl.py</code></td><td>主程式：解析參數、整理標頭、送出 HTTP 請求、顯示回應與錯誤。</td></tr><tr><td><code>requirements.txt</code></td><td>列出所需 Python 套件：requests。</td></tr><tr><td><code>README.md</code></td><td>專案的精簡安裝、指令與範例說明。</td></tr></tbody></table><h3>程式工作流程</h3><div class="flow"><span>讀取命令列參數</span><b>→</b><span>驗證/組合 Headers</span><b>→</b><span>判斷 HTTP 方法</span><b>→</b><span>requests.request()</span><b>→</b><span>輸出狀態、標頭與內容</span></div></section>
+    <section><h2>3. 安裝與啟動</h2><p>請先在命令列切換到 <code>my-curl</code> 專案資料夾，安裝相依套件：</p><pre><code>pip install -r requirements.txt</code></pre><p>基本語法：</p><pre><code>python mycurl.py [選項] &lt;URL&gt;</code></pre><p>URL 必須包含協定，例如 <code>https://example.com</code>；省略 <code>http://</code> 或 <code>https://</code> 會被視為無效 URL。</p></section>
+    <section><h2>4. 指令選項一覽</h2><table><thead><tr><th>選項</th><th>說明</th><th>範例</th></tr></thead><tbody><tr><td><code>-X</code>、<code>--request METHOD</code></td><td>指定 HTTP 方法，例如 GET、POST、PUT、DELETE。</td><td><code>-X DELETE</code></td></tr><tr><td><code>-H</code>、<code>--header "Key: Value"</code></td><td>加入請求標頭，可重複使用。格式必須含有冒號。</td><td><code>-H "Accept: application/json"</code></td></tr><tr><td><code>-d</code>、<code>--data DATA</code></td><td>傳送請求本文。若未指定 <code>-X</code>，程式會自動使用 POST。</td><td><code>-d "name=Tom"</code></td></tr><tr><td><code>-i</code>、<code>--include-headers</code></td><td>額外輸出回應狀態列與所有回應標頭。</td><td><code>-i</code></td></tr><tr><td><code>--timeout SECONDS</code></td><td>設定逾時秒數，預設為 10 秒。</td><td><code>--timeout 30</code></td></tr></tbody></table></section>
+    <section><h2>5. 常用範例</h2><h3>讀取資料（GET）</h3><pre><code>python mycurl.py https://httpbin.org/get</code></pre><h3>傳送表單字串（自動 POST）</h3><pre><code>python mycurl.py -d "name=Tom&amp;age=20" https://httpbin.org/post</code></pre><h3>明確指定 POST 並加入自訂標頭</h3><pre><code>python mycurl.py -X POST -H "Content-Type: application/json" -d "{\"name\":\"Tom\"}" https://httpbin.org/post</code></pre><h3>查看回應標頭</h3><pre><code>python mycurl.py -i https://httpbin.org/get</code></pre><h3>呼叫需要較長等待時間的服務</h3><pre><code>python mycurl.py --timeout 30 https://httpbin.org/delay/3</code></pre></section>
+    <section><h2>6. 輸出與錯誤處理</h2><p>每次成功請求都會先輸出 HTTP 狀態，例如 <code>Status: 200 OK</code>，再輸出回應本文。搭配 <code>-i</code> 時，會在前面增加「Response Headers」區塊。</p><table><thead><tr><th>情況</th><th>程式行為</th></tr></thead><tbody><tr><td>無法連線</td><td>顯示「Failed to connect」並結束。</td></tr><tr><td>等待超時</td><td>顯示逾時秒數並結束。</td></tr><tr><td>URL 未含協定</td><td>提示須加上 <code>http://</code> 或 <code>https://</code>。</td></tr><tr><td>Header 格式錯誤</td><td>若缺少冒號，例如 <code>-H "Accept"</code>，會說明正確格式是 <code>Key: Value</code>。</td></tr><tr><td>其他 requests 例外</td><td>將錯誤訊息輸出到標準錯誤並結束。</td></tr></tbody></table></section>
+    <section><h2>7. 使用注意事項</h2><div class="notice"><strong>這是測試工具，請謹慎執行會改變資料的請求。</strong><br>GET 通常只讀取資料；POST、PUT、DELETE 可能會建立、修改或刪除伺服器資料。確認 URL、方法與資料內容後再執行，尤其不要把帳密或 API 金鑰直接留在共用的命令紀錄中。</div><ul><li>多個同名 Header 時，後面指定的值會覆蓋前面的值。</li><li><code>-d</code> 會原樣傳給 requests；若 API 要 JSON，請自行設定 <code>Content-Type: application/json</code> 並提供正確 JSON 字串。</li><li>HTTP 4xx/5xx 回應仍會顯示狀態與本文；程式不會自動把它當成 Python 例外。</li></ul></section>
+    <section><h2>8. 一句話速查</h2><pre><code>python mycurl.py -X &lt;方法&gt; -H "標頭鍵: 標頭值" -d "資料" -i --timeout &lt;秒數&gt; &lt;URL&gt;</code></pre><p>只需 URL 就能發 GET；加上 <code>-d</code> 即可快速發 POST；需要看回應標頭時加 <code>-i</code>。</p></section>
+  </main><footer>依據 my-curl 專案目前的 README、requirements.txt 與 mycurl.py 整理。</footer>
+</body></html>
