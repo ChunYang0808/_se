@@ -4,8 +4,15 @@
 
 <h1 align="center">NQU 校務資訊系統・互動模擬展示</h1>
 <p align="center">經典校務介面 × 可操作的選課流程 × AI／本地雙軌模擬資料</p>
+
 <p align="center">
-  <a href="https://chunyang0808.github.io/nqu-sys/">🌐 開啟線上展示</a> ·
+  <a href="https://chunyang0808.github.io/nqu-sys/" style="display:inline-block; padding:20px 64px; font-size:26px; font-weight:900; letter-spacing:4px; color:#ffffff; background:linear-gradient(135deg,#2a6bd8 0%,#123d84 100%); border:1px solid #9cc0f5; border-radius:14px; text-decoration:none; box-shadow:0 8px 20px rgba(18,61,132,0.45), inset 0 1px 0 rgba(255,255,255,0.35);">
+    &#9654;&#xFE0E; 線上立即執行
+  </a>
+</p>
+<p align="center">▶ 免安裝、免登入即可開啟線上互動展示站</p>
+
+<p align="center">
   <a href="#-功能亮點">✨ 功能亮點</a> ·
   <a href="#screenshots">🖼️ 畫面預覽</a> ·
   <a href="#-技術架構">🧩 技術架構</a>
