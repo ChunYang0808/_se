@@ -1,3 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap');
 :root{font-family:'DM Sans','Noto Sans TC',sans-serif;color:#17262d;background:#f6f8f7;font-synthesis:none;text-rendering:optimizeLegibility}
+html[data-theme="dark"]{color-scheme:dark;color:#e4f2eb;background:#0c1715}
 *{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:inherit}

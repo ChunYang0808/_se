@@ -94,3 +94,115 @@ footer{line-height:1.6;padding:55px 10px 38px;color:#7b8b84}
 .modeCompare{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}.modeCompare div{display:flex;flex-direction:column;gap:6px;background:#f8fbf9;border:1px solid #e1ede5;border-radius:11px;padding:13px}.modeCompare strong{font-size:13px;color:#1e7656}.modeCompare span{font-size:12px;color:#65796d;line-height:1.55}
 @media(max-width:750px){.roomStatus{justify-content:flex-start}.privacyBanner{align-items:flex-start;flex-wrap:wrap}.privacyBanner button{margin-left:35px;padding:2px 0}.detailBackdrop{padding:12px}.detailModal{max-height:calc(100dvh - 24px);padding:24px 19px;border-radius:17px}.detailModal h2{font-size:23px}.deviceGrid,.modeCompare{grid-template-columns:1fr}.deviceFlow{font-size:11px}.deviceFlow b{letter-spacing:0}}
 @media(prefers-reduced-motion:reduce){.detailModal{animation:none}}
+
+/* Temporary sharing details */
+.deleteSetting{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.deleteSetting label{gap:9px}
+.deleteSetting input{accent-color:#167f64;width:17px;height:17px}
+.settingHelp{border:0;background:#e9f6ee;color:#167457;border-radius:100px;padding:7px 10px;font-size:12px;font-weight:800;cursor:pointer}
+.settingHelp:hover{background:#d8efe1}
+.uploadWarning{display:flex;align-items:flex-start;gap:12px;margin:16px 0 0;padding:15px 17px;border:1px solid #efd8d5;border-radius:14px;background:rgba(195,92,83,.055);color:#703e3b}
+.uploadWarning svg{width:20px;height:20px;flex:none;margin-top:1px;color:#a5514b}
+.uploadWarning strong{display:block;font-size:14px;line-height:1.45;font-weight:700}
+.uploadWarning p{margin:5px 0 0;color:#806c69;font-size:12px;line-height:1.55}
+.deleteExplainer{display:grid;gap:10px}
+.deleteExplainer>div{background:#f3f9f5;border:1px solid #dcece2;border-radius:13px;padding:15px}
+.deleteExplainer strong{color:#196a50;font-size:14px}
+.deleteExplainer p,.deleteFinePrint{font-size:13px;color:#63796b;line-height:1.65;margin:6px 0 0}
+.deleteFinePrint{margin-top:16px}
+.modalBody .downloadPanel{display:block;min-height:0;max-width:680px;margin:auto!important}
+.downloadPanel>p{margin:13px 0 20px}
+.receivedFile{display:flex;align-items:center;gap:15px;background:#fff;border:1px solid #dbe9df;border-radius:16px;padding:17px;margin:22px 0 16px;box-shadow:0 9px 30px #214c370a;min-width:0}
+.receivedIcon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:#e5f6ec;color:#16805e;font-size:28px;font-weight:800;flex:none}
+.receivedFile>div{min-width:0}.receivedFile span:not(.receivedIcon){display:block;font-size:12px;color:#71897b}.receivedFile strong{display:block;font-size:18px;color:#173d34;overflow-wrap:anywhere;margin:3px 0}.receivedFile small{color:#6e8075;font-size:12px;overflow-wrap:anywhere}
+.shareDetails{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:17px}
+.shareDetails>div{background:#f7faf8;border:1px solid #e2ede6;border-radius:12px;padding:13px;min-width:0}
+.shareDetails span{display:block;font-size:11px;color:#728779;margin-bottom:7px}.shareDetails strong{display:block;font-size:13px;color:#244b39;line-height:1.4;overflow-wrap:anywhere}
+.oneTimeHint{display:flex;flex-direction:column;gap:5px;background:#ebf8ef;border:1px solid #c7e9d1;border-radius:12px;padding:14px 16px;color:#186b4f}
+.oneTimeHint strong{font-size:13px}.oneTimeHint span,.expiryHint{font-size:12px;line-height:1.6}
+.expiryHint{color:#5f7568;background:#f5f8f5;border-radius:10px;padding:12px 14px}
+.downloadPanel .button.primary{margin-top:20px!important}.shareTimezone{display:block;margin-top:14px;color:#87998c;font-size:11px;line-height:1.5}
+.shareUnavailable{background:#fff4f0;border:1px solid #f0d7ca;color:#89533e;border-radius:12px;padding:16px;margin-top:20px}.shareUnavailable p{margin:5px 0 0;color:#89533e}
+@media(max-width:750px){.shareDetails{grid-template-columns:1fr 1fr}.shareDetails>div:last-child{grid-column:1/-1}.deleteSetting{gap:3px}.receivedFile strong{font-size:16px}}
+@media(max-width:750px){.uploadWarning{padding:13px 14px;gap:10px}.uploadWarning strong{font-size:13px}.uploadWarning p{font-size:12px}}
+
+/* Connection feedback: compact toast, immersive progress, focused recovery. */
+.eventAlert,.eventAlert.connection,.eventAlert.message,.eventAlert.file{position:fixed;z-index:75;top:calc(24px + env(safe-area-inset-top,0px));right:24px;bottom:auto;left:auto;transform:none;width:min(340px,calc(100vw - 32px));min-width:0;max-width:none;padding:12px 14px;gap:10px;align-items:center;background:#fffffff0;border:1px solid #d5e8dd;border-radius:14px;box-shadow:0 12px 34px #173d3426;backdrop-filter:blur(10px);pointer-events:none;animation:toastEnter .2s ease-out}
+.eventAlert.connection .eventIcon,.eventAlert .eventIcon{width:34px;height:34px;border-radius:9px;background:#e6f5ec;color:#13865e;font-size:19px}
+.eventAlert.connection .eventContent strong,.eventAlert .eventContent strong{color:#173d34;font-size:14px}
+.eventAlert.connection .eventContent p,.eventAlert .eventContent p{color:#60776b;font-size:12px;margin-top:3px;line-height:1.4}
+.eventAlert .eventActions{margin-top:6px;pointer-events:auto}.eventAlert .eventActions:empty{display:none}
+.eventAlert.message{padding-bottom:14px}.eventCountdown{height:2px}
+@keyframes toastEnter{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.connectionLoading,.connectionFailureBackdrop{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:20px;background:#092820b8;backdrop-filter:blur(8px);overscroll-behavior:contain;touch-action:none}
+.loadingContent{text-align:center;color:#fff;width:min(440px,100%)}.loadingContent h2{font-size:clamp(21px,5vw,28px);line-height:1.35;margin:26px 0 9px}.loadingContent p{font-size:14px;line-height:1.6;color:#d5eee2;margin:0}.loadingContent small{display:block;font-size:12px;color:#b0d3c2;margin-top:20px}
+.p2pAnimation{display:flex;align-items:center;justify-content:center;gap:16px;width:min(310px,100%);margin:auto}.deviceNode{width:55px;height:55px;flex:none;display:grid;place-items:center;border:1px solid #8bd2ac;border-radius:15px;background:#ffffff20;color:#dcffed;font-size:25px;box-shadow:0 0 22px #44cf8340}.signalTrack{position:relative;flex:1;height:2px;background:#8dd2aa8c;border-radius:9px}.signalTrack i{position:absolute;top:50%;left:0;width:9px;height:9px;border-radius:50%;background:#9ff0bc;box-shadow:0 0 14px #81ebb0;animation:signalTravel 2.3s ease-in-out infinite alternate}.signalTrack i:nth-child(2){animation-delay:-.7s}.signalTrack i:nth-child(3){animation-delay:-1.4s}@keyframes signalTravel{from{left:0;transform:translate(0,-50%);opacity:.25}to{left:100%;transform:translate(-100%,-50%);opacity:1}}
+.connectionFailureBackdrop{background:#142a24a3;backdrop-filter:blur(6px)}.connectionFailure{width:min(460px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;background:#fff;border:1px solid #e8ebe5;border-radius:20px;padding:27px;box-shadow:0 28px 75px #071d1b55;touch-action:auto}.failureIcon{display:grid;place-items:center;width:43px;height:43px;border-radius:12px;background:#fff2e9;color:#a95c3e;font-size:26px;font-weight:800}.connectionFailure h2{font-size:21px;color:#173d34;margin:16px 0 9px}.connectionFailure p{font-size:14px;line-height:1.65;color:#60756a;margin:0}.failureActions{display:flex;justify-content:flex-end;gap:9px;margin-top:25px}.failureActions button{border:1px solid #d9e7dd;border-radius:9px;padding:10px 15px;background:#fff;color:#426454;font-weight:700}.failureActions button:last-child{border-color:#167f64;background:#167f64;color:#fff}
+@media(max-width:750px){.eventAlert,.eventAlert.connection,.eventAlert.message,.eventAlert.file{top:calc(16px + env(safe-area-inset-top,0px));left:50%;right:auto;bottom:auto;transform:translateX(-50%);width:calc(100vw - 32px);max-width:420px;animation:mobileToastEnter .2s ease-out}.connectionFailure{padding:23px}.p2pAnimation{width:min(280px,100%)}}@keyframes mobileToastEnter{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(prefers-reduced-motion:reduce){.signalTrack i{animation:softPulse 2.5s ease-in-out infinite;left:50%;transform:translate(-50%,-50%)}@keyframes softPulse{50%{opacity:.45}}.eventAlert,.eventAlert.connection,.eventAlert.message,.eventAlert.file{animation:none}}
+
+/* Keep desktop toasts in the space beside the 940px task window when it fits. */
+@media(min-width:751px){.eventAlert,.eventAlert.connection,.eventAlert.message,.eventAlert.file{width:300px;max-width:300px;padding:11px 13px;top:calc(24px + env(safe-area-inset-top,0px))}}
+@media(min-width:1360px) and (max-width:1699px){.eventAlert,.eventAlert.connection,.eventAlert.message,.eventAlert.file{width:calc((100vw - 940px)/2 - 48px);max-width:320px;right:24px}}
+@media(min-width:1700px){.eventAlert,.eventAlert.connection,.eventAlert.message,.eventAlert.file{width:320px;max-width:320px;right:calc((100vw - 940px)/2 - 344px)}}
+
+/* Theme switch is available both on the home page and inside task windows. */
+.topbarActions,.modalTopActions{display:flex;align-items:center;gap:14px}.themeToggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;border:1px solid #cfe4d7;border-radius:100px;background:#edf7f0;color:#176b54;padding:8px 13px;font-size:12px;font-weight:800;line-height:1.2}.themeToggle:hover{background:#dff0e6}.themeToggle:focus-visible{outline:3px solid #27a881;outline-offset:2px}.modalTopActions{gap:9px}
+@media(max-width:750px){.topbarActions>span{display:none}.modalTopActions{gap:5px}.modalTop .themeToggle{padding:7px 10px;font-size:11px}}
+
+/* Dark surfaces retain the FastDrop green while lowering glare. */
+html[data-theme="dark"] body{background:#0c1715;color:#e4f2eb}
+html[data-theme="dark"] .topbar{border-color:#2a4237;color:#a8c0b3}
+html[data-theme="dark"] .brand,html[data-theme="dark"] .hero h1,html[data-theme="dark"] .choice strong,html[data-theme="dark"] .panel h2,html[data-theme="dark"] .panel h3,html[data-theme="dark"] .code{color:#e7f5ec}
+html[data-theme="dark"] .hero h1 em,html[data-theme="dark"] .eyebrow,html[data-theme="dark"] .choice b,html[data-theme="dark"] .textButton,html[data-theme="dark"] .code button{color:#69dcb0}
+html[data-theme="dark"] .hero p,html[data-theme="dark"] .panel>p,html[data-theme="dark"] .choice>span:not(.icon),html[data-theme="dark"] .roomInfo p,html[data-theme="dark"] .settings label{color:#adc1b5}
+html[data-theme="dark"] .heroPills span,html[data-theme="dark"] .choice .icon,html[data-theme="dark"] .status,html[data-theme="dark"] .themeToggle{background:#1a392e;border-color:#335f49;color:#8be8b9}
+html[data-theme="dark"] .themeToggle:hover{background:#24503b}
+html[data-theme="dark"] .choice,html[data-theme="dark"] .panel,html[data-theme="dark"] .modalWindow,html[data-theme="dark"] .modalTop,html[data-theme="dark"] .detailModal,html[data-theme="dark"] .connectionFailure{background:#15241e;border-color:#30483a;box-shadow:0 18px 45px #0004;color:#e4f2eb}
+html[data-theme="dark"] .choice:hover{border-color:#65b78c}
+html[data-theme="dark"] .modalTop,html[data-theme="dark"] .divider,html[data-theme="dark"] .detailDivider,html[data-theme="dark"] .detailFooter{border-color:#30483a;background-color:transparent}
+html[data-theme="dark"] .modalTop{background:#182b22}
+html[data-theme="dark"] .modalTop>span,html[data-theme="dark"] footer,html[data-theme="dark"] .qr small{color:#93aa9a}
+html[data-theme="dark"] .backButton,html[data-theme="dark"] .closeButton,html[data-theme="dark"] .infoButton,html[data-theme="dark"] .privacyBanner button,html[data-theme="dark"] .settingHelp{color:#8be8b9}
+html[data-theme="dark"] .closeButton:hover,html[data-theme="dark"] .detailClose{background:#284334;color:#bcebd1}
+html[data-theme="dark"] .modalBody .roomInfo,html[data-theme="dark"] .qr,html[data-theme="dark"] .fileRow,html[data-theme="dark"] .receivedFile,html[data-theme="dark"] .shareDetails>div,html[data-theme="dark"] .deviceTile,html[data-theme="dark"] .modeCompare div,html[data-theme="dark"] .deleteExplainer>div{background:#1b3026;border-color:#365443;color:#e4f2eb}
+html[data-theme="dark"] .qr{background:#fff;color:#173d34}
+html[data-theme="dark"] .privacyBanner,html[data-theme="dark"] .oneTimeHint,html[data-theme="dark"] .deviceFlow,html[data-theme="dark"] .notice,html[data-theme="dark"] .message,html[data-theme="dark"] .expiryHint{background:#1b3b2d;border-color:#386c4c;color:#b9f0cf}
+html[data-theme="dark"] .privacyBanner span,html[data-theme="dark"] .oneTimeHint span,html[data-theme="dark"] .shareTimezone,html[data-theme="dark"] .fileRow small,html[data-theme="dark"] .receivedFile small,html[data-theme="dark"] .receivedFile span:not(.receivedIcon),html[data-theme="dark"] .shareDetails span{color:#a9c3b2}
+html[data-theme="dark"] .drop{background:#172e23;border-color:#477258;color:#c9e2d2}
+html[data-theme="dark"] .drop small,html[data-theme="dark"] .uploadWarning p,html[data-theme="dark"] .detailIntro,html[data-theme="dark"] .detailRows span,html[data-theme="dark"] .privacyCopy p,html[data-theme="dark"] .modeCompare span,html[data-theme="dark"] .deleteExplainer p,html[data-theme="dark"] .deleteFinePrint{color:#aebfb3}
+html[data-theme="dark"] input,html[data-theme="dark"] textarea,html[data-theme="dark"] select{background:#101e18;border-color:#3a5846;color:#e4f2eb}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#8aab97}
+html[data-theme="dark"] .progress{background:#294534}
+html[data-theme="dark"] .infoButton,html[data-theme="dark"] .settingHelp,html[data-theme="dark"] .detailClose{background:#244130;border-color:#487458}
+html[data-theme="dark"] .detailModal h2,html[data-theme="dark"] .detailRows strong,html[data-theme="dark"] .deviceTile strong,html[data-theme="dark"] .privacyCopy h3,html[data-theme="dark"] .modeCompare strong,html[data-theme="dark"] .deleteExplainer strong,html[data-theme="dark"] .receivedFile strong,html[data-theme="dark"] .shareDetails strong,html[data-theme="dark"] .connectionFailure h2{color:#e5f4e8}
+html[data-theme="dark"] .deviceTile span,html[data-theme="dark"] .detailFooter span{color:#a6bcad}
+html[data-theme="dark"] .uploadWarning,html[data-theme="dark"] .shareUnavailable{background:#3b2927;border-color:#6f4841;color:#f1c8bd}
+html[data-theme="dark"] .shareUnavailable p{color:#e6b9ae}
+html[data-theme="dark"] .localHint{background:#3b3221;border-color:#665435;color:#efdcab}
+html[data-theme="dark"] .artNode{background:#1b3026;border-color:#3e644b;color:#d8f5e4}
+html[data-theme="dark"] .heroArt:before{background:radial-gradient(circle,#1b654a 0,#174235 42%,transparent 72%)}
+html[data-theme="dark"] .eventAlert,html[data-theme="dark"] .eventAlert.connection,html[data-theme="dark"] .eventAlert.message,html[data-theme="dark"] .eventAlert.file{background:#1b3026f2;border-color:#49725a}
+html[data-theme="dark"] .eventAlert .eventContent strong,html[data-theme="dark"] .eventAlert.connection .eventContent strong{color:#e6f5eb}
+html[data-theme="dark"] .eventAlert .eventContent p,html[data-theme="dark"] .eventAlert.connection .eventContent p{color:#b9d3c2}
+html[data-theme="dark"] .connectionFailure p{color:#b4c9bb}
+html[data-theme="dark"] .failureActions button:first-child{background:#203429;border-color:#3d5b46;color:#d2e8d9}
+
+/* Task windows use quiet charcoal layers; green remains an accent. */
+html[data-theme="dark"] .modalBackdrop{background:#0b1518b8}
+html[data-theme="dark"] .modalWindow{background:#1b2225;border-color:#3a4649;color:#e8f0ed}
+html[data-theme="dark"] .modalTop{background:#252d30;border-color:#3a4649}
+html[data-theme="dark"] .modalBody .roomInfo,html[data-theme="dark"] .fileRow,html[data-theme="dark"] .receivedFile,html[data-theme="dark"] .shareDetails>div{background:#262f31;border-color:#3d4b4d;color:#e8f0ed}
+html[data-theme="dark"] .modalBody .divider{background:#3b4849}
+html[data-theme="dark"] .modalWindow .privacyBanner,html[data-theme="dark"] .modalWindow .oneTimeHint,html[data-theme="dark"] .modalWindow .notice,html[data-theme="dark"] .modalWindow .message,html[data-theme="dark"] .modalWindow .expiryHint{background:#22372f;border-color:#3c5d4a;color:#c6e9d5}
+html[data-theme="dark"] .modalWindow .drop{background:#202b2d;border-color:#507061;color:#d3e1d9}
+html[data-theme="dark"] .modalWindow input,html[data-theme="dark"] .modalWindow textarea,html[data-theme="dark"] .modalWindow select{background:#141d20;border-color:#485858;color:#edf5f0}
+html[data-theme="dark"] .modalWindow .progress{background:#3a4b47}
+html[data-theme="dark"] .modalWindow .infoButton,html[data-theme="dark"] .modalWindow .settingHelp{background:#263f34;border-color:#476a54}
+html[data-theme="dark"] .modalWindow .shareDetails span,html[data-theme="dark"] .modalWindow .fileRow small,html[data-theme="dark"] .modalWindow .receivedFile small{color:#b1c1b9}
+html[data-theme="dark"] .detailModal,html[data-theme="dark"] .connectionFailure{background:#20282a;border-color:#3e4b4d}
+html[data-theme="dark"] .detailModal .deviceTile,html[data-theme="dark"] .detailModal .modeCompare div,html[data-theme="dark"] .detailModal .deleteExplainer>div{background:#293335;border-color:#435153}
+html[data-theme="dark"] .detailModal .deviceFlow{background:#253a31;border-color:#45644f}
+html[data-theme="dark"] .eventAlert,html[data-theme="dark"] .eventAlert.connection,html[data-theme="dark"] .eventAlert.message,html[data-theme="dark"] .eventAlert.file{background:#273133f2;border-color:#4b6257}
+.failureActions{flex-wrap:wrap}
+@media(max-width:750px){.failureActions{justify-content:stretch}.failureActions button{flex:1 1 auto}}

@@ -1,0 +1,1 @@
+ALTER TABLE files ADD COLUMN uploader_os TEXT NOT NULL DEFAULT 'Other';
