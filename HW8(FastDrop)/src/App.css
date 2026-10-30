@@ -65,3 +65,32 @@ footer{line-height:1.6;padding:55px 10px 38px;color:#7b8b84}
 @media(max-width:900px){.hero{grid-template-columns:1fr;padding:55px 0 38px;gap:8px}.heroArt{height:245px;max-width:420px;width:100%;margin:auto}.artCenter{width:112px;height:112px;font-size:48px;border-radius:28px}.orbit{inset:22px 60px}.orbitTwo{inset:40px 25px}.cards{gap:12px}.choice{padding:20px}}
 @media(max-width:750px){main{padding:0 18px}.hero{padding:36px 0 24px;min-height:0}.hero h1{font-size:clamp(38px,8vw,52px)}.heroArt{display:none}.heroPills{margin-top:18px}.choice{min-height:145px}.choice .icon{margin-bottom:10px}.choice b{padding-top:10px}.modalBackdrop{padding:0;align-items:stretch}.modalWindow{width:100%;max-height:100dvh;border-radius:0}.modalTop{height:58px;padding:0 16px}.modalTop>span{display:none}.modalBody{padding:20px 17px 35px}.modalBody .panel h2{font-size:26px}.modalBody .roomInfo{padding:16px}.eventAlert{bottom:12px;right:12px;min-width:0;padding:15px;gap:11px}.eventAlert.connection,.eventAlert.error{bottom:auto;right:auto}.eventIcon{width:36px;height:36px}.eventContent strong{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.heroArt *,.eventAlert,.modalWindow{animation:none!important}.eventCountdown{animation-timing-function:steps(5,end)}.choice{transition:none}}
+
+/* Session details and the P2P privacy explanation */
+.roomStatus{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.infoButton{border:1px solid #cce6d7;border-radius:100px;background:#fff;color:#167b5d;padding:9px 13px;font-size:13px;font-weight:800;white-space:nowrap}
+.infoButton:hover{background:#ebf7ef;border-color:#95cdb0}
+.privacyBanner{display:flex;align-items:center;gap:13px;margin-top:16px;padding:13px 16px;border:1px solid #cce8d7;background:#f0faf3;border-radius:14px;color:#17684f}
+.shieldIcon{width:25px;height:25px;flex:none;color:#15966b}
+.privacyBanner>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.privacyBanner strong{font-size:14px}.privacyBanner span{font-size:12px;color:#517c68}
+.privacyBanner button{border:0;background:none;color:#14795a;font-size:12px;font-weight:800;white-space:nowrap;margin-left:auto;padding:7px}
+.privacyBanner button:hover,.infoButton:hover{text-decoration:underline}
+.detailBackdrop{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:20px;background:#0c2925a6;backdrop-filter:blur(5px)}
+.detailModal{position:relative;width:min(520px,100%);max-height:calc(100dvh - 40px);overflow:auto;background:#fff;border:1px solid #d9ebe0;border-radius:22px;padding:30px;box-shadow:0 30px 90px #0b282655;animation:enter .24s ease-out}
+.detailClose{position:absolute;right:18px;top:15px;border:0;background:#f0f6f2;color:#4e7361;width:31px;height:31px;border-radius:8px;font-size:22px;line-height:1}
+.detailModal h2{font-size:27px;color:#173d34;margin:9px 35px 7px 0;line-height:1.3}
+.detailIntro{color:#647a6d;font-size:13px;line-height:1.6;margin:0 0 22px}
+.deviceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.deviceTile{background:#f4f9f5;border:1px solid #deede3;border-radius:13px;padding:15px;min-width:0}
+.deviceTile span{display:block;color:#71897a;font-size:12px;margin-bottom:8px}.deviceTile strong{display:block;color:#194b39;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
+.detailDivider{height:1px;background:#e5eee8;margin:22px 0 13px}
+.detailRows>div{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:10px 0;font-size:14px}
+.detailRows span{color:#6e8275}.detailRows strong{color:#254c39;text-align:right;font-size:14px}.connectedValue{display:inline-flex;align-items:center;gap:7px}.connectedValue i{width:8px;height:8px;background:#23a875;border-radius:50%}
+.detailFooter{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:23px;padding-top:18px;border-top:1px solid #e5eee8}.detailFooter span{color:#91a397;font-size:11px}.detailFooter button{border:0;background:#167f64;color:#fff;border-radius:9px;padding:10px 19px;font-weight:800;white-space:nowrap}
+.privacyCopy h3{font-size:16px;color:#214f3b;margin:23px 0 8px}.privacyCopy p{color:#63796b;font-size:14px;line-height:1.75;margin:0}
+.deviceFlow{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#f1f9f3;border:1px solid #d6eadd;border-radius:12px;padding:13px;margin:16px 0;color:#1f7b59;font-size:13px;font-weight:800}
+.deviceFlow b{position:relative;flex:1;text-align:center;font-size:14px;letter-spacing:.15em;white-space:nowrap}.deviceFlow small{display:block;letter-spacing:.1em;font-size:10px;color:#698d75}
+.modeCompare{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:15px}.modeCompare div{display:flex;flex-direction:column;gap:6px;background:#f8fbf9;border:1px solid #e1ede5;border-radius:11px;padding:13px}.modeCompare strong{font-size:13px;color:#1e7656}.modeCompare span{font-size:12px;color:#65796d;line-height:1.55}
+@media(max-width:750px){.roomStatus{justify-content:flex-start}.privacyBanner{align-items:flex-start;flex-wrap:wrap}.privacyBanner button{margin-left:35px;padding:2px 0}.detailBackdrop{padding:12px}.detailModal{max-height:calc(100dvh - 24px);padding:24px 19px;border-radius:17px}.detailModal h2{font-size:23px}.deviceGrid,.modeCompare{grid-template-columns:1fr}.deviceFlow{font-size:11px}.deviceFlow b{letter-spacing:0}}
+@media(prefers-reduced-motion:reduce){.detailModal{animation:none}}

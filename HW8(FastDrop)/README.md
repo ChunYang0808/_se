@@ -167,6 +167,77 @@ Cloudflare 主要負責連線協調與必要的後端邏輯，而不是替每個
 <!-- 在這裡放檔案傳輸截圖：docs/images/file-transfer.png -->
 
 ---
+## 🟢 即時連線資訊
+
+兩端成功建立 WebRTC 連線後，FastDrop 可以顯示目前連線的概略資訊，讓使用者知道正在與什麼裝置建立 P2P 傳輸。
+
+### 裝置資訊
+
+雙方會透過既有的 WebRTC DataChannel 暫時交換概略裝置資訊，例如：
+
+- 作業系統：Windows、macOS、iOS、Android、Linux
+- 瀏覽器：Chrome、Edge、Safari、Firefox
+- 裝置類型：Desktop、Mobile、Tablet
+
+例如：
+
+```text
+我的裝置
+Windows · Chrome · Desktop
+
+對方裝置
+iOS · Safari · Mobile
+```
+
+這些資訊只用於**目前這次連線的畫面顯示**，不會建立裝置歷史紀錄，也不會寫入 D1 作為追蹤資料。
+
+FastDrop 不會為此功能顯示或蒐集：
+
+- 完整 IP 位址
+- GPS 位置
+- 精準地理位置
+- 精準手機型號
+- 不必要的裝置指紋資訊
+
+### WebRTC 連線狀態
+
+FastDrop 亦會使用 WebRTC 提供的連線統計資訊顯示：
+
+| 項目 | 範例 |
+|---|---|
+| 連線狀態 | P2P 已連線 |
+| 傳輸方式 | WebRTC DataChannel |
+| DataChannel | Open |
+| 延遲 | 47 ms |
+| 網路協定 | UDP |
+
+能取得相關資料時，也可在檔案傳輸期間顯示傳輸速度。
+
+![FastDrop Connection Information](docs/images/connection-info.png)
+
+### 🛡️ P2P 隱私提示
+
+FastDrop 的即時房間會標示：
+
+> **此房間不儲存傳輸內容 · WebRTC P2P**
+
+這裡所指的是**文字與檔案內容不會先存入 Cloudflare R2**。
+
+Cloudflare Worker 與後端仍會協助：
+
+- 建立臨時房間
+- 裝置配對
+- 交換 WebRTC signaling 資訊
+
+當 WebRTC 連線建立完成後，實際的文字與檔案內容會優先直接在兩台裝置之間傳送。
+
+```text
+你的裝置  ═════════════▶  對方裝置
+             WebRTC
+```
+
+只有使用者主動選擇 **「限時暫存分享」** 時，檔案才會進入 Cloudflare R2 暫存流程。
+---
 
 # ☁️ 限時暫存分享
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { cleanupReceivedFiles, prepareReceiveTarget, rememberReceivedFile } from './receiveStorage'
+import { detectDevice, readConnectionStats, validDeviceInfo, type DeviceInfo } from './connectionInfo'
 import './App.css'
 
 type Room = { code: string; token: string; role: 'host' | 'guest'; expiresAt: number }
@@ -8,8 +9,10 @@ type Transfer = { name: string; size: number; mime: string; progress: number; st
 type Cloud = { id: string; name: string; mime: string; size: number; status: string; ownerToken: string; downloadToken: string; progress: number; url?: string }
 type Signal = { id: number; type: 'offer' | 'answer' | 'candidate'; payload: RTCSessionDescriptionInit | RTCIceCandidateInit }
 type Alert = { id: number; title: string; detail: string; kind: 'connection' | 'message' | 'file' | 'error'; url?: string; name?: string }
+type SpeedInfo = { direction: '↑' | '↓'; mbPerSecond: number; finished: boolean }
 const MB = 1024 * 1024, P2P_MAX = 1024 * MB, CLOUD_MAX = 250_000_000, PART = 8 * MB
 const formatSize = (bytes: number) => bytes >= MB ? `${(bytes / MB).toFixed(1)} MB` : `${(bytes / 1024).toFixed(1)} KB`
+const formatSpeed = (mbPerSecond: number) => mbPerSecond < 0.1 ? `${(mbPerSecond * 1024).toFixed(1)} KB/s` : `${mbPerSecond.toFixed(1)} MB/s`
 async function api<T>(path: string, method = 'GET', body?: unknown, token?: string): Promise<T> {
   const res = await fetch(path, { method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: body ? JSON.stringify(body) : undefined })
   const data = await res.json()
@@ -36,7 +39,13 @@ function App() {
     return params.has('file') && params.has('token') ? 'download' : params.has('room') ? 'join' : 'home'
   })
   const [alert, setAlert] = useState<Alert | null>(null)
+  const [peerDevice, setPeerDevice] = useState<DeviceInfo | null>(null)
+  const [detailPanel, setDetailPanel] = useState<'connection' | 'privacy' | null>(null)
+  const [networkStats, setNetworkStats] = useState<{ latencyMs?: number; transport?: 'UDP' | 'TCP' }>({})
+  const [speed, setSpeed] = useState<SpeedInfo | null>(null)
+  const myDevice = detectDevice(navigator.userAgent, navigator.maxTouchPoints)
   const alertSequenceRef = useRef(0)
+  const speedSampleRef = useRef<{ direction: SpeedInfo['direction']; start: number; last: number; bytes: number } | null>(null)
   const dcRef = useRef<RTCDataChannel | null>(null)
   const pcRef = useRef<RTCPeerConnection | null>(null)
   const cursorRef = useRef(0)
@@ -56,6 +65,45 @@ function App() {
     const timer = window.setTimeout(() => setAlert(current => current?.id === alert.id ? null : current), duration)
     return () => window.clearTimeout(timer)
   }, [alert])
+
+  useEffect(() => {
+    if (detailPanel !== 'connection' || !pcRef.current) return
+    let active = true
+    const refresh = async () => {
+      try {
+        const report = await pcRef.current?.getStats()
+        if (active && report) setNetworkStats(readConnectionStats(report))
+      } catch { if (active) setNetworkStats({}) }
+    }
+    void refresh()
+    const timer = window.setInterval(() => void refresh(), 2500)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [detailPanel, room])
+
+  useEffect(() => {
+    if (!detailPanel) return
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setDetailPanel(null) }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [detailPanel])
+
+  function beginSpeed(direction: SpeedInfo['direction']) {
+    const time = performance.now()
+    speedSampleRef.current = { direction, start: time, last: time, bytes: 0 }
+    setSpeed(null)
+  }
+  function recordSpeed(bytes: number, finished = false) {
+    const sample = speedSampleRef.current
+    if (!sample) return
+    const time = performance.now()
+    const elapsed = time - sample.last
+    if (elapsed < 250 && !finished) return
+    const totalElapsed = Math.max(time - sample.start, 1)
+    const rate = finished ? bytes / totalElapsed * 1000 : (bytes - sample.bytes) / Math.max(elapsed, 1) * 1000
+    if (Number.isFinite(rate) && rate >= 0) setSpeed({ direction: sample.direction, mbPerSecond: rate / MB, finished })
+    sample.last = time
+    sample.bytes = bytes
+  }
 
   function updateConnection(next: string) {
     setConnection(next)
@@ -84,8 +132,11 @@ function App() {
     dcRef.current = channel
     channel.binaryType = 'arraybuffer'
     channel.bufferedAmountLowThreshold = 256 * 1024
-    channel.onopen = () => updateConnection('已建立點對點連線')
-    channel.onclose = () => updateConnection('連線已中斷')
+    channel.onopen = () => {
+      updateConnection('已建立點對點連線')
+      channel.send(JSON.stringify({ type: 'device-info', payload: myDevice }))
+    }
+    channel.onclose = () => { if (dcRef.current === channel) { setPeerDevice(null); updateConnection('連線已中斷') } }
     channel.onerror = () => updateConnection('連線發生錯誤')
     channel.onmessage = async event => {
       try {
@@ -94,6 +145,7 @@ function App() {
           if (!incoming) return
           const chunk = event.data as ArrayBuffer
           incoming.received += chunk.byteLength
+          recordSpeed(incoming.received)
           incoming.chain = incoming.chain.then(async () => {
             if (incoming.writer) await incoming.writer.write(chunk)
             else incoming.chunks!.push(chunk)
@@ -101,7 +153,11 @@ function App() {
           updateTransfer(incoming.name, { progress: Math.min(100, Math.round(incoming.received / incoming.size * 100)) })
           return
         }
-        const msg = JSON.parse(event.data) as { type: string; text?: string; name?: string; size?: number; mime?: string; reason?: string }
+        const msg = JSON.parse(event.data) as { type: string; text?: string; name?: string; size?: number; mime?: string; reason?: string; payload?: unknown }
+        if (msg.type === 'device-info' && validDeviceInfo(msg.payload)) {
+          const { browser, os, deviceType } = msg.payload
+          setPeerDevice({ browser, os, deviceType })
+        }
         if (msg.type === 'text' && typeof msg.text === 'string') {
           setMessages(m => [...m, { text: msg.text!, own: false }])
           setAlert({ id: ++alertSequenceRef.current, title: '收到新訊息', detail: msg.text, kind: 'message' })
@@ -113,6 +169,7 @@ function App() {
           try {
             Object.assign(incoming, await prepareReceiveTarget(msg.size, navigator.storage))
             incomingRef.current = incoming
+            beginSpeed('↓')
             updateTransfer(incoming.name, { size: incoming.size, mime: incoming.mime, status: '接收中', progress: 0 })
             channel.send(JSON.stringify({ type: 'ready' }))
           } catch (e) { channel.send(JSON.stringify({ type: 'reject', reason: e instanceof Error ? e.message : '儲存空間不足' })) }
@@ -126,6 +183,7 @@ function App() {
           const blob = incoming.handle ? await incoming.handle.getFile() : new Blob(incoming.chunks, { type: incoming.mime })
           const url = URL.createObjectURL(blob)
           updateTransfer(incoming.name, { progress: 100, status: '接收完成', url })
+          recordSpeed(incoming.received, true)
           setAlert({ id: ++alertSequenceRef.current, title: '收到新檔案', detail: `${incoming.name} · ${formatSize(incoming.size)}`, kind: 'file', url, name: incoming.name })
           // Keep the OPFS file while its object URL is available for the user to save.
           if (incoming.key) rememberReceivedFile(incoming.key)
@@ -189,13 +247,14 @@ function App() {
     }
     void tick()
     const timer = setInterval(() => void tick(), 2500)
-    return () => { stopped = true; clearInterval(timer); pc.close(); dcRef.current = null }
+    return () => { stopped = true; clearInterval(timer); pc.close(); dcRef.current = null; setPeerDevice(null) }
   // The peer connection belongs to a room; UI callback changes must not reconnect it.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room])
   async function createRoom() {
     try {
       const result = await api<Room>('/api/rooms', 'POST')
+      setPeerDevice(null); setNetworkStats({}); setSpeed(null); speedSampleRef.current = null
       setRoom(result); setMode('room'); updateConnection('等待另一裝置加入'); setNotice('')
     } catch (e) { reportError(e) }
   }
@@ -204,6 +263,7 @@ function App() {
     if (!/^[A-HJ-NP-Z2-9]{10}$/.test(code)) { setNotice('請輸入 10 位配對碼'); return }
     try {
       const result = await api<Room>(`/api/rooms/${code}/join`, 'POST')
+      setPeerDevice(null); setNetworkStats({}); setSpeed(null); speedSampleRef.current = null
       setRoom(result); setMode('room'); updateConnection('正在建立點對點連線'); setNotice('')
       history.replaceState({}, '', '/')
     } catch (e) { reportError(e) }
@@ -228,13 +288,16 @@ function App() {
     const accepted = await new Promise<boolean>(resolve => { readyRef.current = resolve; setTimeout(() => { if (readyRef.current === resolve) { readyRef.current = null; resolve(false) } }, 45000) })
     if (!accepted) { updateTransfer(file.name, { status: '對方拒絕或逾時' }); sendingRef.current = false; return }
     try {
+      beginSpeed('↑')
       for (let offset = 0; offset < file.size; offset += 16 * 1024) {
         if (channel.readyState !== 'open') throw new Error('連線中斷')
         if (channel.bufferedAmount > 512 * 1024) await new Promise<void>(resolve => { channel.addEventListener('bufferedamountlow', () => resolve(), { once: true }) })
         channel.send(await file.slice(offset, Math.min(offset + 16 * 1024, file.size)).arrayBuffer())
+        recordSpeed(Math.min(offset + 16 * 1024, file.size))
         updateTransfer(file.name, { status: '傳送中', progress: Math.round(Math.min(offset + 16 * 1024, file.size) / file.size * 100) })
       }
       channel.send(JSON.stringify({ type: 'end' }))
+      recordSpeed(file.size, true)
       updateTransfer(file.name, { status: '等待對方確認', progress: 100 })
       setTimeout(() => { if (sendingRef.current && sentNameRef.current === file.name) { sendingRef.current = false; updateTransfer(file.name, { status: '對方未確認完成' }) } }, 30000)
     } catch (e) { sendingRef.current = false; updateTransfer(file.name, { status: '傳送失敗' }); reportError(e) }
@@ -302,8 +365,10 @@ function App() {
   }
   const incomingLink = new URLSearchParams(location.search)
   const incomingFile = incomingLink.get('file'), incomingToken = incomingLink.get('token')
+  const isConnected = connection === '已建立點對點連線' || connection === '檔案已送達'
   function closePanel() {
     setMode('home')
+    setDetailPanel(null)
     setNotice('')
     if (location.search) history.replaceState({}, '', '/')
   }
@@ -320,10 +385,30 @@ function App() {
     {mode === 'join' && <section className="panel joinPanel"><span className="eyebrow">CONNECT YOUR DEVICES</span><h2>加入另一台裝置</h2><p>輸入對方畫面上的 10 位配對碼，即可開始直接傳送。</p><div className="join"><input aria-label="配對碼" autoFocus value={codeInput} onChange={e => setCodeInput(e.target.value.toUpperCase())} onKeyDown={e => { if (e.key === 'Enter') void joinRoom() }} placeholder="10 位配對碼" maxLength={10} /><button onClick={joinRoom}>加入房間 →</button></div></section>}
     {mode === 'download' && incomingFile && incomingToken && <section className="panel downloadPanel"><span className="eyebrow">YOUR FILE IS READY</span><h2>收到暫存分享</h2><p>此連結有時效，請在到期前下載。下載會在按下按鈕後開始。</p><a className="button primary" href={downloadUrl(incomingFile, incomingToken)}>下載檔案 ↓</a></section>}
     {mode === 'room' && room && ['localhost', '127.0.0.1'].includes(location.hostname) && <div className="localHint">目前連結只適合同一台電腦；手機測試請使用可連線的 HTTPS 網址。</div>}
-    {mode === 'room' && room && <section className="panel"><div className="sectionHead"><div><span className="eyebrow">即時傳送</span><h2>房間 {room.code}</h2></div><span className="status">{connection}</span></div><div className="roomInfo"><div><p>讓另一裝置掃描 QR Code 或輸入配對碼</p><div className="code">{room.code}<button onClick={() => copy(room.code)}>複製代碼</button></div><button className="textButton" onClick={() => copy(joinUrl(room.code))}>複製加入連結 ↗</button></div><div className="qr"><QRCodeSVG value={joinUrl(room.code)} size={128} level="M" /><small>掃描後開啟加入頁面</small></div></div><div className="divider" /><h3>傳送文字</h3><div className="compose"><textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="貼上文字或連結…" maxLength={5000} /><button onClick={sendText} disabled={connection !== '已建立點對點連線' && connection !== '檔案已送達'}>傳送</button></div>{messages.map((m, i) => <div className="message" key={i}><span>{m.own ? '我' : '對方'}：{m.text}</span><button onClick={() => copy(m.text)}>複製</button></div>)}<div className="divider" /><h3>傳送檔案</h3><div className="drop" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) void sendP2P(file) }}><p>拖放檔案到這裡，或選擇檔案</p><button onClick={() => fileInputRef.current?.click()}>選擇檔案</button><input ref={fileInputRef} type="file" hidden onChange={e => { const file = e.target.files?.[0]; if (file) void sendP2P(file); e.target.value = '' }} /><small>點對點上限 1 GB，使用分段傳送</small></div>{transfers.map((t, i) => <div className="fileRow" key={i}><div><strong>{t.name}</strong><small>{formatSize(t.size)} · {t.mime || '未知類型'} · {t.status}</small></div><div className="progress"><span style={{ width: `${t.progress}%` }} /></div>{t.url && <a href={t.url} download={t.name}>儲存檔案</a>}</div>)}</section>}
+    {mode === 'room' && room && <section className="panel">
+      <div className="sectionHead"><div><span className="eyebrow">即時傳送</span><h2>房間 {room.code}</h2></div><div className="roomStatus"><span className="status">{connection}</span>{(connection === '已建立點對點連線' || connection === '檔案已送達') && <button className="infoButton" onClick={() => setDetailPanel('connection')}>查看連線資訊 ↗</button>}</div></div>
+      <div className="roomInfo"><div><p>讓另一裝置掃描 QR Code 或輸入配對碼</p><div className="code">{room.code}<button onClick={() => copy(room.code)}>複製代碼</button></div><button className="textButton" onClick={() => copy(joinUrl(room.code))}>複製加入連結 ↗</button></div><div className="qr"><QRCodeSVG value={joinUrl(room.code)} size={128} level="M" /><small>掃描後開啟加入頁面</small></div></div>
+      <div className="privacyBanner"><svg className="shieldIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2.5 20 6v5.6c0 4.8-3.1 8.1-8 10-4.9-1.9-8-5.2-8-10V6l8-3.5Z"/><path d="m8.5 11.9 2.3 2.3 4.7-4.8"/></svg><div><strong>此房間不儲存傳輸內容</strong><span>文字與檔案透過 WebRTC 點對點傳送</span></div><button onClick={() => setDetailPanel('privacy')}>了解更多 →</button></div>
+      <div className="divider" /><h3>傳送文字</h3><div className="compose"><textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder="貼上文字或連結…" maxLength={5000} /><button onClick={sendText} disabled={connection !== '已建立點對點連線' && connection !== '檔案已送達'}>傳送</button></div>
+      {messages.map((m, i) => <div className="message" key={i}><span>{m.own ? '我' : '對方'}：{m.text}</span><button onClick={() => copy(m.text)}>複製</button></div>)}
+      <div className="divider" /><h3>傳送檔案</h3><div className="drop" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) void sendP2P(file) }}><p>拖放檔案到這裡，或選擇檔案</p><button onClick={() => fileInputRef.current?.click()}>選擇檔案</button><input ref={fileInputRef} type="file" hidden onChange={e => { const file = e.target.files?.[0]; if (file) void sendP2P(file); e.target.value = '' }} /><small>點對點上限 1 GB，使用分段傳送</small></div>
+      {transfers.map((t, i) => <div className="fileRow" key={i}><div><strong>{t.name}</strong><small>{formatSize(t.size)} · {t.mime || '未知類型'} · {t.status}</small></div><div className="progress"><span style={{ width: `${t.progress}%` }} /></div>{t.url && <a href={t.url} download={t.name}>儲存檔案</a>}</div>)}
+    </section>}
     {mode === 'cloud' && <section className="panel"><span className="eyebrow">離線也能分享</span><h2>限時暫存</h2><p>每個檔案最多 250 MB；暫存池總容量 0.5 GB。容量不足時會顯示排隊等待。</p><div className="settings"><label>保留時間 <select value={hours} onChange={e => setHours(Number(e.target.value))}>{[1,2,3,4,5,6].map(h => <option key={h} value={h}>{h} 小時</option>)}</select></label><label><input type="checkbox" checked={deleteAfter} onChange={e => setDeleteAfter(e.target.checked)} /> 成功下載後刪除</label></div><div className="drop" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) void uploadCloud(file) }}><p>拖放檔案到這裡，或選擇檔案</p><button onClick={() => cloudInputRef.current?.click()}>選擇檔案</button><input ref={cloudInputRef} type="file" hidden onChange={e => { const file = e.target.files?.[0]; if (file) void uploadCloud(file); e.target.value = '' }} /></div>{cloud && <div className="fileRow"><div><strong>{cloud.name}</strong><small>{formatSize(cloud.size)} · {cloud.mime} · {cloud.status === 'waiting' ? '容量不足，排隊等待中' : cloud.status === 'ready' ? '可分享' : cloud.status === 'failed' ? '上傳失敗' : '上傳中'}</small></div><div className="progress"><span style={{ width: `${cloud.progress}%` }} /></div>{cloud.url && <div className="share"><input readOnly value={cloud.url} aria-label="下載連結" /><button onClick={() => copy(cloud.url!)}>複製連結</button></div>}</div>}</section>}
     </div></div></div>}
     {alert && <div key={alert.id} className={`eventAlert ${alert.kind}`} role="alert"><div className="eventIcon">{alert.kind === 'file' ? '↓' : alert.kind === 'message' ? '✉' : alert.kind === 'error' ? '!' : '↗'}</div><div className="eventContent"><strong>{alert.title}</strong><p>{alert.detail}</p><div className="eventActions">{alert.kind === 'file' && alert.url && <a href={alert.url} download={alert.name}>儲存檔案 ↓</a>}{alert.kind === 'message' && <button onClick={() => { setMode('room'); setAlert(null) }}>檢視訊息 →</button>}{alert.kind === 'error' && <button onClick={() => { setMode('cloud'); setAlert(null) }}>改用暫存分享 →</button>}</div></div>{alert.kind === 'message' && <span className="eventCountdown" aria-hidden="true" />}</div>}
+    {detailPanel && <div className="detailBackdrop" onMouseDown={event => { if (event.target === event.currentTarget) setDetailPanel(null) }}><section className="detailModal" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <button className="detailClose" onClick={() => setDetailPanel(null)} aria-label="關閉">×</button>
+      {detailPanel === 'connection' ? <>
+        <span className="eyebrow">CURRENT SESSION</span><h2 id="detail-title">連線資訊</h2><p className="detailIntro">只顯示這次連線的概略資訊，不記錄裝置或位置。</p>
+        <div className="deviceGrid"><div className="deviceTile"><span>我的裝置</span><strong>{myDevice.os} · {myDevice.browser} · {myDevice.deviceType}</strong></div><div className="deviceTile"><span>對方裝置</span><strong>{peerDevice ? `${peerDevice.os} · ${peerDevice.browser} · ${peerDevice.deviceType}` : '無法取得'}</strong></div></div>
+        <div className="detailDivider"/><div className="detailRows"><div><span>連線狀態</span><strong className="connectedValue"><i />{isConnected ? 'P2P 已連線' : '未連線'}</strong></div><div><span>傳輸方式</span><strong>WebRTC DataChannel</strong></div><div><span>DataChannel</span><strong>{isConnected ? 'Open' : 'Closed'}</strong></div>{networkStats.latencyMs !== undefined && <div><span>延遲</span><strong>{networkStats.latencyMs} ms</strong></div>}{networkStats.transport && <div><span>網路協定</span><strong>{networkStats.transport}</strong></div>}{speed && <div><span>{speed.finished ? '上次平均速度' : '目前速度'}</span><strong>{speed.direction} {formatSpeed(speed.mbPerSecond)}</strong></div>}</div>
+      </> : <>
+        <span className="eyebrow">FAST. SIMPLE. DIRECT.</span><h2 id="detail-title">🛡️ WebRTC 點對點傳輸</h2>
+        <div className="privacyCopy"><h3>檔案直接在裝置之間傳送</h3><p>兩台裝置成功連線後，文字與檔案會透過 WebRTC DataChannel 在兩端之間傳送。P2P 模式不將傳輸內容存入 Cloudflare R2。</p><div className="deviceFlow"><span>你的裝置</span><b>══════▶<small>WebRTC</small></b><span>對方裝置</span></div><h3>Cloudflare 負責什麼？</h3><p>Cloudflare Worker 協助建立房間、交換 WebRTC 連線資訊並完成配對。這些資訊用來建立連線；連線後的文字與檔案內容由 WebRTC DataChannel 傳送。</p><h3>☁️ 限時暫存是另一種模式</h3><p>只有你主動選擇「限時暫存分享」時，檔案才會上傳至 Cloudflare R2，並依設定時間刪除。</p><div className="modeCompare"><div><strong>即時傳送</strong><span>WebRTC P2P · 不將傳輸內容存入 R2</span></div><div><strong>限時暫存</strong><span>Cloudflare R2 · 檔案暫時存放於雲端</span></div></div></div>
+      </>}
+      <div className="detailFooter"><span>FastDrop · Fast. Simple. Direct.</span><button onClick={() => setDetailPanel(null)}>{detailPanel === 'connection' ? '完成' : '我知道了'}</button></div>
+    </section></div>}
     <footer>© 2026 FastDrop. Crafted with ☕ by 胡鈞揚 (National Quemoy University). All rights reserved.</footer>
   </main>
 }
