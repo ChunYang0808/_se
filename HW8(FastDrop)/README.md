@@ -41,6 +41,8 @@ FastDrop 是一個以 **WebRTC + Cloudflare** 打造的跨裝置即時傳輸工�
 
 即可立即使用 FastDrop。
 
+![FastDrop Home](docs/images/home.png)
+
 ---
 
 ## ✨ 核心功能
@@ -79,8 +81,6 @@ FastDrop 的 P2P 模式單一檔案目前最高支援 **1 GB**。
 
 傳輸時使用分段讀取與緩衝控制，避免一次將整個大型檔案載入記憶體。
 
-<!-- 在這裡放首頁截圖：docs/images/home.png -->
-
 ---
 
 ## 🔗 QR Code 快速配對
@@ -96,7 +96,7 @@ FastDrop 的 P2P 模式單一檔案目前最高支援 **1 GB**。
 
 如果不方便掃描，也可以直接輸入房間的 10 位配對碼。
 
-<!-- 在這裡放配對成功截圖：docs/images/connected.png -->
+![FastDrop Connection](docs/images/connected.png)
 
 ---
 
@@ -128,7 +128,7 @@ iPhone
 
 收到新訊息時，介面也會顯示即時通知與倒數提示。
 
-<!-- 在這裡放文字傳送截圖：docs/images/text-transfer.png -->
+![FastDrop Text Transfer](docs/images/text-transfer.png)
 
 ---
 
@@ -164,9 +164,10 @@ FastDrop 支援：
 
 Cloudflare 主要負責連線協調與必要的後端邏輯，而不是替每個 P2P 檔案做中轉。
 
-<!-- 在這裡放檔案傳輸截圖：docs/images/file-transfer.png -->
+![FastDrop File Transfer](docs/images/file-transfer.png)
 
 ---
+
 ## 🟢 即時連線資訊
 
 兩端成功建立 WebRTC 連線後，FastDrop 可以顯示目前連線的概略資訊，讓使用者知道正在與什麼裝置建立 P2P 傳輸。
@@ -237,6 +238,7 @@ Cloudflare Worker 與後端仍會協助：
 ```
 
 只有使用者主動選擇 **「限時暫存分享」** 時，檔案才會進入 Cloudflare R2 暫存流程。
+
 ---
 
 # ☁️ 限時暫存分享
@@ -274,7 +276,7 @@ Cloudflare Worker 與後端仍會協助：
 
 > **0.5 GB 是 FastDrop 自行設定的「同時占用及預留容量安全限制」，並不代表 Cloudflare R2 帳號本身只有 0.5 GB 額度。**
 
-<!-- 在這裡放暫存分享截圖：docs/images/temp-share.png -->
+![FastDrop Temporary Share](docs/images/temp-share.png)
 
 ---
 
@@ -305,16 +307,7 @@ Cloudflare R2
 
 容量不足時，檔案會先進入等待佇列，而不是直接開始上傳。
 
-這能避免多名使用者同時操作時：
-
-```text
-使用者 A：看到剩 200 MB
-使用者 B：也看到剩 200 MB
-
-↓ 同時開始上傳
-
-實際容量超標
-```
+這能避免多名使用者同時操作時，同時判斷仍有足夠容量並造成暫存池超額。
 
 FastDrop 會先完成容量 Reservation，再允許真正的 R2 上傳。
 
@@ -415,17 +408,7 @@ FastDrop 的核心設計原則是：
 
 暫存檔案超過有效期限後會立即失去下載資格。
 
-後端排程會定期清除：
-
-```text
-過期 R2 Object
-+
-D1 Metadata
-+
-Reservation
-```
-
-並釋放暫存容量。
+後端排程會定期清除過期 R2 Object、D1 Metadata 與 Reservation，並釋放暫存容量。
 
 ---
 
@@ -457,8 +440,6 @@ FastDrop 已部署於：
 - Git
 
 Cloudflare 開發與部署則需要 Wrangler。
-
----
 
 ## Clone
 
@@ -528,7 +509,7 @@ FastDrop 已針對核心邏輯加入測試。
 ```text
 ✅ ESLint
 ✅ TypeScript Type Check
-✅ 8 Tests
+✅ 8+ Tests
 ✅ Production Build
 ```
 
@@ -540,6 +521,7 @@ FastDrop 已針對核心邏輯加入測試。
 ✅ Windows ↔ iPhone 配對
 ✅ Windows → iPhone 檔案傳送
 ✅ iPhone → Windows 檔案傳送
+✅ WebRTC 連線資訊
 ✅ R2 暫存分享
 ✅ 暫存下載
 ```
@@ -557,14 +539,7 @@ FastDrop 目前仍屬於 MVP 階段。
 - 跨裝置歷史紀錄同步
 - 付費方案
 
-在部分：
-
-- 企業網路
-- 校園網路
-- 嚴格 NAT
-- 特殊防火牆
-
-環境中，WebRTC P2P 可能無法直接建立連線。
+在部分企業網路、校園網路、嚴格 NAT 或特殊防火牆環境中，WebRTC P2P 可能無法直接建立連線。
 
 遇到這類狀況時，可以改用 FastDrop 的 **限時暫存分享**。
 
@@ -573,8 +548,6 @@ FastDrop 目前仍屬於 MVP 階段。
 ---
 
 # 🗺️ Development Roadmap｜開發規劃
-
-這裡記錄 FastDrop 已完成以及未來可能加入的功能。
 
 `[x]` 代表已完成，`[ ]` 代表仍在規劃或尚未實作。
 
@@ -586,6 +559,8 @@ FastDrop 目前仍屬於 MVP 階段。
 - [x] 即時文字傳送
 - [x] P2P 檔案傳送
 - [x] 檔案傳輸進度
+- [x] WebRTC 裝置與連線資訊
+- [x] P2P 隱私提示
 - [x] Cloudflare R2 暫存
 - [x] 自動過期
 - [x] 下載後刪除
@@ -601,7 +576,7 @@ FastDrop 目前仍屬於 MVP 階段。
 - [ ] 即時傳輸速度顯示
 - [ ] 剩餘時間估算
 - [ ] 暫停 / 繼續大型檔案傳輸
-- [ ] 更完整的端對端加密設計
+- [ ] R2 客戶端加密
 - [ ] 暫存分享 QR Code
 - [ ] 深色 / 淺色主題
 
@@ -624,6 +599,10 @@ FastDrop 目前仍屬於 MVP 階段。
 ### File Transfer
 
 ![FastDrop File Transfer](docs/images/file-transfer.png)
+
+### Connection Information
+
+![FastDrop Connection Information](docs/images/connection-info.png)
 
 ### Temporary Share
 
